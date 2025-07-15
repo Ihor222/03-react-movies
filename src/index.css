@@ -1,9 +1,5 @@
-body {
-  font-family: sans-serif;
-  line-height: 1.5;
-}
+@import "modern-normalize";
 
-img {
-  display: block;
-  max-width: 100%;
+body.hidden {
+    overflow: hidden;
 }

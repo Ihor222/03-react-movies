@@ -1,63 +1,69 @@
-import { useState } from "react";
-import CafeInfo from "../CafeInfo/CafeInfo";
-import VoteOptions from "../VoteOptions/VoteOptions";
-import VoteStats from "../VoteStats/VoteStats";
-import Notification from "../Notification/Notification";
-import css from "./app.module.css";
-import type { Votes, VoteType } from "../../types/votes";
-
+import {useState} from "react";
+import {toast, Toaster} from "react-hot-toast";
+import SearchBar from "../SearchBar/SearchBar.tsx";
+import MovieGrid from "../MovieGrid/MovieGrid.tsx";
+import type {Movie} from "../../types/movie.ts";
+import * as movieService from '../../services/movieService.ts'
+import Loader from "../Loader/Loader.tsx";
+import ErrorMessage from "../ErrorMessage/ErrorMessage.tsx";
+import MovieModal from "../MovieModal/MovieModal.tsx";
 
 function App() {
-  const [votes, setVotes] = useState<Votes>({
-    good: 0,
-    neutral: 0,
-    bad: 0,
-  });
+    const [movies, setMovies] = useState<Movie[]>([])
+    const [loading, setLoading] = useState<boolean>(false)
+    const [error, setError] = useState<string|null>(null)
+    const [currentMovie, setCurrentMovie] = useState<Movie | null>(null)
+    const handleSubmit = (query:string) => {
+        setMovies([])
 
-  const handleVote = (type: VoteType) => {
-    setVotes({
-      ...votes,
-      [type]: votes[type] + 1,
-    });
-  };
+        setLoading(true);
+        setError(null)
 
-  const resetVotes = () => {
-    setVotes({
-      good: 0,
-      neutral: 0,
-      bad: 0,
-    });
-  };
+        movieService.fetchMovie(query).then(data => {
+            if (!data.results.length) {
+                toast.error('No movies found for your request')
+            }
 
-  const totalVotes = votes.good + votes.neutral + votes.bad;
+            setMovies(data.results);
 
-  const positiveRate = totalVotes
-    ? Math.round((votes.good / totalVotes) * 100)
-    : 0;
+        }).catch(e => {
+            setError(e.message)
+        }).finally(() => setLoading(false))
+    };
 
-  const isReset = totalVotes !== 0;
+    function onSelect(movie: Movie): void {
+        setCurrentMovie(movie)
+    }
 
-  return (
-    <>
-      <div className={css.app}>
-        <CafeInfo />
-        <VoteOptions
-          onVote={handleVote}
-          onReset={resetVotes}
-          canReset={isReset}
-        />
-        {totalVotes > 0 ? (
-          <VoteStats
-            votes={votes}
-            totalVotes={totalVotes}
-            positiveRate={positiveRate}
-          />
-        ) : (
-          <Notification />
-        )}
-      </div>
-    </>
-  );
+    function onClose() {
+        setCurrentMovie(null)
+    }
+
+    if (error) {
+        return (
+            <>
+                <SearchBar onSubmit={handleSubmit}/>
+                {loading ? (<Loader/>) : (<ErrorMessage message={error}/>)}
+                <Toaster position="top-center"/>
+            </>
+        )
+    }
+
+    return (
+        <>
+            <SearchBar onSubmit={handleSubmit}/>
+            {loading ? (<Loader/>) : (<MovieGrid
+                movies={movies}
+                onSelect={onSelect}
+            />)}
+            {currentMovie && (
+                <MovieModal
+                    movie={currentMovie}
+                    onClose={onClose}
+                />)}
+            <Toaster position="top-center"/>
+        </>
+    )
 }
 
-export default App;
+export default App
