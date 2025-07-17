@@ -1,5 +1,5 @@
 import { http } from '../libs/api-service.ts';
-import { BEARER_KEY, ROUTES } from '../constants';
+import {ROUTES } from '../constants';
 import type { Movie } from '../types/movie.ts';
 
 interface MoviesResponse {
@@ -20,7 +20,7 @@ export const fetchMovie = async (
     {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${BEARER_KEY}`, 
+        Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3MjE5OTZmYmNlNzFlYjI5Y2Q0MDhlMjQ3ODlhNDQyMCIsIm5iZiI6MTc1MjU4NzYwOC43MTksInN1YiI6IjY4NzY1ZDU4ODQ1OWU5NGE4MmE3YjE1MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.e88HARb-tOxlt9j1f4g-Xw9un_SduYbvlgvVFiJ1ypc`, 
       },
     }
   );
